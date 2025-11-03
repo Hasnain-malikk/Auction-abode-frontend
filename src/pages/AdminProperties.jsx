@@ -63,13 +63,31 @@ const AdminProperties = () => {
         }
     };
 
-    // Calculate statistics
+    // Normalize status helper (case-insensitive) and alias mapping
+    const normalizeStatus = (s) => (s || '').toString().trim().toLowerCase();
+
     const totalProperties = properties.length;
-    const pendingProperties = properties.filter(p => p.status === 'Pending').length;
-    const approvedProperties = properties.filter(p => p.status === 'Approved').length;
-    const rejectedProperties = properties.filter(p => p.status === 'Rejected').length;
-    const onSellProperties = properties.filter(p => p.status === 'OnSell').length;
-    const soldProperties = properties.filter(p => p.status === 'Sold').length;
+
+    const pendingProperties = properties.filter(p => normalizeStatus(p.status) === 'pending').length;
+
+    // Backend maps 'Approved' -> 'OnSell'. Treat both 'approved' and 'onsell' as approved for the card.
+    const approvedProperties = properties.filter(p => {
+        const st = normalizeStatus(p.status);
+        return st === 'approved' || st === 'onsell' || st === 'on sell';
+    }).length;
+
+    const rejectedProperties = properties.filter(p => normalizeStatus(p.status) === 'rejected').length;
+
+    const onSellProperties = properties.filter(p => {
+        const st = normalizeStatus(p.status);
+        return st === 'onsell' || st === 'on sell';
+    }).length;
+
+    // Backend uses 'Selled' for sold; accept both 'selled' and 'sold'
+    const soldProperties = properties.filter(p => {
+        const st = normalizeStatus(p.status);
+        return st === 'selled' || st === 'sold';
+    }).length;
 
     // Pagination logic
     const indexOfLastProperty = currentPage * propertiesPerPage;
